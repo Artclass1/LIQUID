@@ -38,99 +38,30 @@ abstract class LiquidationDatabase : RoomDatabase() {
     ) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            INSTANCE?.let { database ->
-                scope.launch(Dispatchers.IO) {
-                    populateDefaultMarketplaces(database.liquidationDao())
-                }
-            }
-        }
-
-        private suspend fun populateDefaultMarketplaces(dao: LiquidationDao) {
-            // Seed standard top liquidation marketplaces around the globe
-            val defaultSources = listOf(
-                MarketplaceSource(
-                    name = "B-Stock Network",
-                    websiteUrl = "https://bstock.com",
-                    region = "Global (US & Europe)",
-                    description = "Official liquidation network for Amazon, Walmart, Costco, Target, and Best Buy. Direct auctions for pallets and truckloads.",
-                    typicalCategories = "Electronics, Home Goods, Apparel, Appliances",
-                    scoring = 4.8f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "Direct Liquidation",
-                    websiteUrl = "https://www.directliquidation.com",
-                    region = "North America",
-                    description = "Major liquidation broker featuring returns, overstocks, and refurbished merchandise from tier-1 US retail brands.",
-                    typicalCategories = "Computers, Consoles, Tablets, General Merchandise",
-                    scoring = 4.5f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "Merkandi Wholesale",
-                    websiteUrl = "https://merkandi.com",
-                    region = "Europe & UK",
-                    description = "Leading European destination for overstock, bankruptcy stocks, and liquidation lots. Connects wholesale buyers with sellers.",
-                    typicalCategories = "Apparel, Stocklots, Food & Beverage, Home Decor",
-                    scoring = 4.6f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "Liquidation.com",
-                    websiteUrl = "https://www.liquidation.com",
-                    region = "North America",
-                    description = "One of the oldest bulk liquidation brokers with distribution centers worldwide. Sells by box, pallet, or truckload.",
-                    typicalCategories = "Electronics, Industrial, Jewelry, Clothing",
-                    scoring = 4.2f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "BULQ Lot Brokerage",
-                    websiteUrl = "https://www.bulq.com",
-                    region = "North America",
-                    description = "Known for transparent manifests and fixed pricing/auctions. Friendly platform for beginner retail arbitrage.",
-                    typicalCategories = "Toys, Apparel, Living Goods, Office Supplies",
-                    scoring = 4.4f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "Clearance Joblots",
-                    websiteUrl = "https://www.clearancejoblots.co.uk",
-                    region = "Europe & UK",
-                    description = "UK-centered surplus stocking network for retail clearance, shop closeouts, and salvaged stocklots.",
-                    typicalCategories = "Household Essentials, Tools, Giftware, Cosmetics",
-                    scoring = 4.3f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "Gemini Wholesale UK",
-                    websiteUrl = "https://www.geminiwholesale.co.uk",
-                    region = "Europe & UK",
-                    description = "Clearance stock wholesaling, importing store liquidations, closeouts and surplus inventory in bulk.",
-                    typicalCategories = "Pound Store Stock, Toys, Sourcing Pallets",
-                    scoring = 4.5f,
-                    holdsOverstock = true,
-                    isUserCreated = false
-                ),
-                MarketplaceSource(
-                    name = "Globalsources Overstock",
-                    websiteUrl = "https://gxsourcing.com",
-                    region = "Asia & Global",
-                    description = "B2B catalog platform connecting global buyers directly with Asian factories unloading unsold factory-overrun lots.",
-                    typicalCategories = "Consumer Electronics, Accessories, OEM components",
-                    scoring = 4.7f,
-                    holdsOverstock = true,
-                    isUserCreated = false
+            db.beginTransaction()
+            try {
+                // Seed standard top liquidation marketplaces around the globe directly in the transaction
+                val defaultSources = listOf(
+                    arrayOf("B-Stock Network", "https://bstock.com", "Global (US & Europe)", "Official liquidation network for Amazon, Walmart, Costco, Target, and Best Buy. Direct auctions for pallets and truckloads.", "Electronics, Home Goods, Apparel, Appliances", 4.8f, 1, 0),
+                    arrayOf("Direct Liquidation", "https://www.directliquidation.com", "North America", "Major liquidation broker featuring returns, overstocks, and refurbished merchandise from tier-1 US retail brands.", "Computers, Consoles, Tablets, General Merchandise", 4.5f, 1, 0),
+                    arrayOf("Merkandi Wholesale", "https://merkandi.com", "Europe & UK", "Leading European destination for overstock, bankruptcy stocks, and liquidation lots. Connects wholesale buyers with sellers.", "Apparel, Stocklots, Food & Beverage, Home Decor", 4.6f, 1, 0),
+                    arrayOf("Liquidation.com", "https://www.liquidation.com", "North America", "One of the oldest bulk liquidation brokers with distribution centers worldwide. Sells by box, pallet, or truckload.", "Electronics, Industrial, Jewelry, Clothing", 4.2f, 1, 0),
+                    arrayOf("BULQ Lot Brokerage", "https://www.bulq.com", "North America", "Known for transparent manifests and fixed pricing/auctions. Friendly platform for beginner retail arbitrage.", "Toys, Apparel, Living Goods, Office Supplies", 4.4f, 1, 0),
+                    arrayOf("Clearance Joblots", "https://www.clearancejoblots.co.uk", "Europe & UK", "UK-centered surplus stocking network for retail clearance, shop closeouts, and salvaged stocklots.", "Household Essentials, Tools, Giftware, Cosmetics", 4.3f, 1, 0),
+                    arrayOf("Gemini Wholesale UK", "https://www.geminiwholesale.co.uk", "Europe & UK", "Clearance stock wholesaling, importing store liquidations, closeouts and surplus inventory in bulk.", "Pound Store Stock, Toys, Sourcing Pallets", 4.5f, 1, 0),
+                    arrayOf("Globalsources Overstock", "https://gxsourcing.com", "Asia & Global", "B2B catalog platform connecting global buyers directly with Asian factories unloading unsold factory-overrun lots.", "Consumer Electronics, Accessories, OEM components", 4.7f, 1, 0)
                 )
-            )
-            for (source in defaultSources) {
-                dao.insertSource(source)
+                for (source in defaultSources) {
+                    db.execSQL(
+                        "INSERT INTO marketplace_sources (name, websiteUrl, region, description, typicalCategories, scoring, holdsOverstock, isUserCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        source
+                    )
+                }
+                db.setTransactionSuccessful()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                db.endTransaction()
             }
         }
     }
